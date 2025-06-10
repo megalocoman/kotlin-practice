@@ -1,0 +1,4 @@
+package com.example.cjofrevi.pokeapi_webflux_reactive.model
+
+class ResultPokeList(val results: List<PokeList>, count: Int, next: String?, previous: String?)
+    : ListBase(count,  next, previous )
