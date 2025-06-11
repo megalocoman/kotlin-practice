@@ -1,9 +1,11 @@
 package com.example.cjofrevi.pokeapi_webflux_reactive.service
 
 
+import com.example.cjofrevi.pokeapi_webflux_reactive.data.Pokemon
 import com.example.cjofrevi.pokeapi_webflux_reactive.data.PokemonList
 import com.example.cjofrevi.pokeapi_webflux_reactive.model.ResultPokeList
 import com.example.cjofrevi.pokeapi_webflux_reactive.repository.PokemonListMongoRepository
+import com.example.cjofrevi.pokeapi_webflux_reactive.repository.PokemonRepository
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -16,14 +18,23 @@ import reactor.core.publisher.Mono
 @Service
 class PokemonServiceImpl(
     private val client: WebClient,
-    private val repository: PokemonListMongoRepository
+    private val repository: PokemonListMongoRepository,
+    private val pokemonRepository: PokemonRepository
 ) : PokemonService {
-    
+
     override fun getPokemonList(): Flux<PokemonList> {
         return getPokemonList(1)
             .flatMap { resultPokeList -> getPokemonList(resultPokeList.count).log() }
             .flatMap { resultPokeList -> save(resultPokeList).log() }
     }
+
+    override fun getPokemonListFromDB(): Flux<PokemonList> = repository.findAll()
+
+    override fun getPokemonByName(name: String): Mono<Pokemon> =
+        repository.findByName(name)
+            .flatMap { result -> getPokemonByNameApi(result.name) }
+            .flatMap { result -> pokemonRepository.save(result)
+            }
 
     private fun save(result: ResultPokeList): Flux<PokemonList> {
 
@@ -59,4 +70,14 @@ class PokemonServiceImpl(
             }
             .retrieve()
             .bodyToFlux<ResultPokeList>()
+
+    private fun getPokemonByNameApi(name: String): Mono<Pokemon> =
+        client.get()
+            .uri { uriBuilder ->
+                uriBuilder
+                    .path("/pokemon/{name}")
+                    .build(name)
+            }
+            .retrieve()
+            .bodyToMono<Pokemon>()
 }
