@@ -36,6 +36,14 @@ class PokemonServiceImpl(
             .flatMap { result -> pokemonRepository.save(result)
             }
 
+    override fun fetchAndSaveAllPokemon(): Mono<String> =
+        repository.findAll()
+            .flatMap { resultList -> getPokemonByNameApi(resultList.name)}
+            .flatMap { pokemon -> pokemonRepository.save(pokemon)  }
+            .then<String>(   Mono.just<String>("fin")
+            )
+
+
     private fun save(result: ResultPokeList): Flux<PokemonList> {
 
         val pokemonListEntity = mutableListOf<PokemonList>()

@@ -10,5 +10,7 @@ interface PokemonService {
     fun getPokemonList(): Flux<PokemonList>
     fun getPokemonListFromDB(): Flux<PokemonList>
     fun getPokemonByName(name: String): Mono<Pokemon>
+    fun fetchAndSaveAllPokemon(): Mono<String>
+
 
 }

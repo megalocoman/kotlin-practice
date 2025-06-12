@@ -19,4 +19,8 @@ class ExampleController(private val service: PokemonService) {
     @GetMapping("getPokemonByName/{name}")
     fun getPokemonByName(@PathVariable name :String ) = service.getPokemonByName(name)
 
+    @GetMapping("/fetchAllPokemon")
+    fun fetchAndSaveAllPokemon() = service.fetchAndSaveAllPokemon()
+
+
 }
